@@ -1,77 +1,125 @@
 
-opt=1
-while [ "$opt" -lt 7 ]
-do
+#!/bin/bash
 
-	echo -e "Choose one of the Following\n1. Create a New Address Book\n2. View Records\n3. Insert new Record\n4. Delete a Record\n5. Modify a Record\n6. Exit"
-	# echo -e, enables special features of echo to use \n \t \b etc.
-	read opt
-	case $opt in
+create()
+{
+if [ -e addressbook.txt ]; #-e is checking exitence of addressbook.txt 
+then
+	echo -e "ADDRESSBOOK ALREADY EXISTS!! \n" 
+else
+	touch addressbook.txt #touch creates a new adressbook if not already exiting . 
+	echo -e "NEW ADDRESSBOOK CREATED SUCCESSFULLY!!!!! \n"
+fi
+}
 
-	1)
-		echo "Enter filename"
-		read fileName
-		if [ -e $fileName ] ; then	# -e to check if file exists, if exits remove the file
-			rm $fileName
+
+insert()
+{
+
+echo -e "ENTER THE FIRST NAME:- \n" # -e is used to  make \n available for use 
+read fname
+echo -e "ENTER THE LAST NAME:- \n"
+read lname
+echo -e "ENTER THE EMAIL-ID:- \n"
+read email
+echo -e "ENTER THE MOBILE NUMBER:- \n"
+read mno
+echo -e "ENTER THE ADDRESS:- \n"
+read addr
+
+echo "$fname	$lname	$email	$mno	$addr" >> addressbook.txt 
+echo -e "RECORD INSERTION SUCCESSFUL !! \n"
+}
+
+
+view()
+{
+if [ ! -s addressbook.txt ];  
+then 
+	echo -e "THE ADDRESSBOOK IS EMPTY !!! \n"
+else
+	sed -n 'p' addressbook.txt  
+	
+fi
+}
+
+
+delete()
+{
+if [ ! -s addressbook.txt ];
+then
+	echo -e "ADDRESSBOOK EMPTY !!! \n"
+else
+	echo -e "ENTER THE FIRST NAME OR EMAIL-ID FOR DELETING RECORD:- \n"
+	read fnem
+	grep -n "$fnem" addressbook.txt
+	
+	echo -e "ENTER THE LINE NUMBER TO DELETE:- \n"
+	read lineno
+
+	for line in `grep -n "$fnem" addressbook.txt` 
+	do
+	
+	number=`echo $line|cut -c1`
+
+		if [ "$number" == "$lineno" ];
+		then
+			sed -i -e "${lineno}d" addressbook.txt #ratta maro 
+			echo -e "RECORD DELETION SUCCESSFUL!!!! \n"
 		fi
-		cont=1
-		echo  "NAME\t	NUMBER\t\tADDRESS\n===============================\n" | cat >> $fileName
-		while [ "$cont" -gt 0 ]
-		do
-			echo "Enter Name:"
-			read name
-			echo "Enter Phone Number of $name"
-			read number
-			echo "Enter Address of $name"
-			read address
-			echo "$name\\t$number\\t$address" | cat >> $fileName
-			echo "Enter 0 to Stop, 1 to Enter next"
-			read cont
-		done
-		;;
 
-	2)
-		cat $fileName
-		;;
-	3)
-		echo "\nEnter Name"
-		read name
-		echo "Enter Phone Number of $name"
-		read number
-		echo "Enter Address of $name"
-		read address
-		echo "$name\t$number\t\t$address" | cat >> $fileName
-		;;
-	4)
-		echo "Enter address name"
-		read name
-		grep -v $name
-		;;
+	done
+fi
+
+}
+
+modify()
+{
+if [ ! -s addressbook.txt ];
+then
+	echo -e "ADDRESSBOOK EMPTY !!! \n"
+else
+	echo -e "ENTER THE NAME(FIRST NAME/LAST NAME) OF THE PERSON TO BE EDITED:- \N"
+	read name
+	grep -n "$name" addressbook.txt
 		
-	5)
-		echo "Delete record\nEnter Name/Phone Number"
-		read pattern
-		temp="temp"
-		grep -v $pattern $fileName | cat >> $temp 
-		rm $fileName
-		cat $temp | cat >> $fileName
-		rm $temp
-		;;
-	6)
-		echo "Modify record\nEnter Name/Phone Number"
-		read pattern
-		temp="temp"
-		grep -v $pattern $fileName | cat >> $temp
-		rm $fileName
-		cat $temp | cat >> $fileName
-		rm $temp
-		echo "Enter Name"
-		read name
-		echo "Enter Phone Number of $name"
-		read number
-		echo "Enter Address of $name"
-		read address
-		echo -e "$name\t$number\t$address" | cat >> $fileName
-		;;
-	esac
+			echo -e "ENTER THE LINE NUMBER OF THE RECORD TO BE EDITED:- \n"
+			read lineno
+			
+			for line in `grep -n "$name" addressbook.txt`
+			do
+				number=`echo "$line"|cut -c1`
+				if [ "$number" == "$lineno" ]
+					then
+					echo -e "ENTER THE MODIFICATION DETAILS:- \n"
+					insert
+					sed -i -e "${lineno}s/.*/$insert/" addressbook.txt # ratta maro 
+				echo -e "MODIFICATION SUCCESSFUL !!! \n"
+				fi
+
+			done
+		fi
+}
+
+ch=1;
+while [ $ch -lt 6 ]; # less than 
+do
+echo -e "1) CREATE ADDRESSBOOK \n"
+echo -e "2) VIEW ADDRESSBOOK \n"
+echo -e "3) INSERT RECORD IN ADDRESSBOOK \n"  
+echo -e "4) DELETE RECORD FROM ADDRESSBOOK \n"
+echo -e "5) MODIFY ADRESSBOOK \n"
+echo -e "6) EXIT"
+
+read -p "ENTER YOUR CHOICE:-" ch
+
+case $ch in 
+1)create;;
+2)view;;
+3)insert;;
+4)delete;;
+5)modify;;
+6)echo "ADDRESSBOOK EXITED!!"
+esac
+
 done
